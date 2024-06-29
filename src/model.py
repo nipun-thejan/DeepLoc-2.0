@@ -54,7 +54,7 @@ class BaseModel(pl.LightningModule):
        
         self.initial_ln = nn.LayerNorm(embed_dim)
         self.lin = nn.Linear(embed_dim, 256)
-        self.attn_head = AttentionHead(256, 1)
+        self.attn_head = AttentionHead(256, 1) # change attention heads 2, 4, 
         self.clf_head = nn.Linear(256, 11)
         self.kld = nn.KLDivLoss(reduction="batchmean")
         self.lr = 1e-3
