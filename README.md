@@ -1,3 +1,5 @@
+Trying to imporove on original deeploc2.0 in paper 
+
 # DeepLoc 2.0
 
 Multi-label subcellular localization and sorting signal prediction based on protein foundation models (https://github.com/agemagician/ProtTrans, https://github.com/facebookresearch/esm).
