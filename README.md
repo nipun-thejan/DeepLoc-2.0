@@ -1,4 +1,4 @@
-Trying to imporove on original deeploc2.0 in paper 
+Trying to improve on original deeploc2.0 in paper 
 
 # DeepLoc 2.0
 
