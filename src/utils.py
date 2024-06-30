@@ -41,8 +41,21 @@ def get_train_model_attributes(model_type):
             ESM1bFrozen,
             alphabet,
             EMBEDDINGS[FAST]["embeds"],
-            "models/models_esm1b",
-            "outputs/esm1b/",
+            "models/models_esm1b_loss_bce",
+            "outputs/esm1b_loss_bce",
+            1022,
+            1280
+        )
+    if model_type == FAST2:
+        with open("models/ESM2_alphabet.pkl", "rb") as f:
+            alphabet = pickle.load(f)
+        return ModelAttributes(
+            model_type,
+            ESM1bFrozen,
+            alphabet,
+            EMBEDDINGS[FAST2]["embeds"],
+            "models/models_esm2_loss_bce",
+            "outputs/esm2_loss_bce",
             1022,
             1280
         )

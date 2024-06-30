@@ -47,11 +47,12 @@ def generate_sl_outputs(
         datahandler: DataloaderHandler, 
         thresh_type="mcc", 
         inner_i="1Layer", 
-        reuse=False):
+        reuse=False,
+        itr=3):
     
     threshold_dict = {}
         
-    for outer_i in range(5):
+    for outer_i in range(itr):
         print("Generating output for ensemble model", outer_i)
         dataloader, data_df = datahandler.get_partition_dataloader_inner(outer_i)
         if not os.path.exists(os.path.join(model_attrs.outputs_save_path, f"inner_{outer_i}_{inner_i}.pkl")):

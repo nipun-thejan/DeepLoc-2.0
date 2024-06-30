@@ -131,13 +131,13 @@ def calculate_sl_metrics_fold(test_df, thresholds):
     #    metrics_dict[f"{categories[1+i]}"] = roc_auc_score(y_subloc[:,i], predictions[:,i+1])
     return metrics_dict
 
-def calculate_sl_metrics(model_attrs: ModelAttributes, datahandler: DataloaderHandler, thresh_type="mcc", inner_i="1Layer"):
+def calculate_sl_metrics(model_attrs: ModelAttributes, datahandler: DataloaderHandler, thresh_type="mcc", inner_i="1Layer", itr=3):
     with open(os.path.join(model_attrs.outputs_save_path, f"thresholds_sl_{thresh_type}.pkl"), "rb") as f:
         threshold_dict = pickle.load(f)
     print(np.array(list(threshold_dict.values())).mean(0))
     metrics_dict_list = {}
     full_data_df = []
-    for outer_i in range(5):
+    for outer_i in range(itr):
         data_df = datahandler.get_partition(outer_i)
         output_df = pd.read_pickle(os.path.join(model_attrs.outputs_save_path, f"{outer_i}_{inner_i}.pkl"))
         data_df = data_df.merge(output_df)

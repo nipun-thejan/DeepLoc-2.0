@@ -16,6 +16,22 @@ def focal_loss(input, target, gamma=1):
     focal_loss = ( (1-pt) ** gamma ) * bceloss
     return focal_loss.mean()
 
+def bce_loss_fn(input, target):
+    return F.binary_cross_entropy_with_logits(input, target)
+
+def hinge_loss(input, target):
+    return torch.mean(torch.clamp(1 - input * target, min=0))
+
+
+def dice_loss(input, target, smooth=1):
+    input = torch.sigmoid(input)
+    input_flat = input.view(-1)
+    target_flat = target.view(-1)
+    intersection = (input_flat * target_flat).sum()
+    return 1 - ((2. * intersection + smooth) / (input_flat.sum() + target_flat.sum() + smooth))
+
+
+
 class AttentionHead(nn.Module):
       def __init__(self, hidden_dim, n_heads):
           super(AttentionHead, self).__init__()
@@ -54,7 +70,7 @@ class BaseModel(pl.LightningModule):
        
         self.initial_ln = nn.LayerNorm(embed_dim)
         self.lin = nn.Linear(embed_dim, 256)
-        self.attn_head = AttentionHead(256, 1) # change attention heads 2, 4, 
+        self.attn_head = AttentionHead(256, 1)
         self.clf_head = nn.Linear(256, 11)
         self.kld = nn.KLDivLoss(reduction="batchmean")
         self.lr = 1e-3
@@ -117,7 +133,7 @@ class BaseModel(pl.LightningModule):
         x, l, n, y, y_tags, _ = batch
         y_pred, y_attns =  self.forward(x, l, n)
         reg_loss, seq_loss, seq_count = self.attn_reg_loss(y, y_attns, y_tags, l, n)
-        bce_loss = focal_loss(y_pred, y)
+        bce_loss = bce_loss_fn(y_pred, y)
         loss = bce_loss + SUP_LOSS_MULT * seq_loss + REG_LOSS_MULT * reg_loss
         self.log('train_loss_batch', loss, on_epoch=True)
         return {'loss': loss}
@@ -127,10 +143,10 @@ class BaseModel(pl.LightningModule):
         x, l, n, y, y_tags, _ = batch
         y_pred, y_attns =  self.forward(x, l, n)
         reg_loss, seq_loss, seq_count = self.attn_reg_loss(y, y_attns, y_tags, l, n)
-        bce_loss = focal_loss(y_pred, y)
+        bce_loss = bce_loss_fn(y_pred, y)
         loss = bce_loss + SUP_LOSS_MULT * seq_loss + REG_LOSS_MULT * reg_loss
         self.log('val_loss_batch', loss, on_epoch=True)
-        self.log('bce_loss', bce_loss, on_epoch=True)
+        self.log('bce_loss', bce_loss, on_epoch=True)     
         return {'loss': loss, 
                 'seq_loss': seq_loss,
                 'reg_loss': reg_loss,

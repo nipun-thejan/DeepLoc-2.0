@@ -1,5 +1,6 @@
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+from pytorch_lightning.loggers import TensorBoardLogger
 from src.data import *
 from src.utils import *
 from src.eval_utils import *
@@ -33,6 +34,8 @@ def train_model(model_attrs: ModelAttributes, datahandler:DataloaderHandler, out
          mode='min'
     )
 
+    logger = TensorBoardLogger("tb_logs/loss_bce", name=f"model_{outer_i}_1Layer")
+
     # Initialize trainer
     trainer = pl.Trainer(max_epochs=14, 
                         default_root_dir=model_attrs.save_path + f"/{outer_i}_1Layer",
@@ -42,7 +45,9 @@ def train_model(model_attrs: ModelAttributes, datahandler:DataloaderHandler, out
                             early_stopping_callback
                         ],
                         precision=16,
-                        accelerator="auto")
+                        accelerator="auto",
+                        devices=[0],
+                        logger=logger)
     clf = model_attrs.class_type()
     trainer.fit(clf, train_dataloader, val_dataloader)
     return trainer
@@ -77,16 +82,17 @@ if __name__ == "__main__":
         embed_len=model_attrs.embed_len
     )
     print("Training subcellular localization models")
-    for i in range(0, 5):
-        print(f"Training model {i+1} / 5")
+    itr = 3
+    for i in range(0, itr):
+        print(f"Training model {i+1} / {itr}")
         if not os.path.exists(os.path.join(model_attrs.save_path, f"{i}_1Layer.ckpt")):
             train_model(model_attrs, datahandler, i)
     print("Finished training subcellular localization models")
 
     print("Using trained models to generate outputs for signal prediction training")
-    generate_sl_outputs(model_attrs=model_attrs, datahandler=datahandler)
+    generate_sl_outputs(model_attrs=model_attrs, datahandler=datahandler, itr=itr)
     print("Generated outputs! Can train sorting signal prediction now")
 
 
     print("Computing subcellular localization performance on swissprot CV dataset")
-    calculate_sl_metrics(model_attrs=model_attrs, datahandler=datahandler)
+    calculate_sl_metrics(model_attrs=model_attrs, datahandler=datahandler, itr=itr)
